@@ -1,5 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
+import { css } from "@emotion/core";
 import styled from "@emotion/styled";
+
+const blocks = {
+  CoverBlock,
+  SplitCoverBlock
+};
 
 function CoverBlock() {
   return (
@@ -10,32 +16,51 @@ function CoverBlock() {
 }
 
 function App() {
+  const [currentBlock, setCurrentBlock] = useState(Object.keys(blocks)[0]);
+  const CurrentBlockComponent = blocks[currentBlock];
+
   return (
-    <div className="App">
-      <BlockPreviews />
-      <CoverBlock />
-    </div>
+    <Layout>
+      <Sidebar>
+        <BlockPreviews
+          currentBlock={currentBlock}
+          setCurrentBlock={setCurrentBlock}
+        />
+      </Sidebar>
+      <Body>
+        <CurrentBlockComponent />
+      </Body>
+    </Layout>
   );
 }
 
 export default App;
 
-function BlockPreviews() {
+function BlockPreviews({ currentBlock, setCurrentBlock }) {
+  const blockKeys = Object.keys(blocks);
+
   return (
     <PreviewGridView>
-      <Preview>
-        <CoverBlock />
-      </Preview>
-      <Preview>
-        <SplitCoverBlock />
-      </Preview>
+      {blockKeys.map(block => {
+        const BlockComponent = blocks[block];
+
+        return (
+          <Preview
+            isActive={currentBlock === block}
+            key={block}
+            onClick={() => setCurrentBlock(block)}
+          >
+            <BlockComponent />
+          </Preview>
+        );
+      })}
     </PreviewGridView>
   );
 }
 
-function Preview({ children }) {
+function Preview({ children, ...props }) {
   return (
-    <PreviewThumbView>
+    <PreviewThumbView {...props}>
       <PreviewContentView>{children}</PreviewContentView>
     </PreviewThumbView>
   );
@@ -54,6 +79,29 @@ function SplitCoverBlock() {
   );
 }
 
+const Layout = styled.div`
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-gap: 20px;
+  grid-template-columns: 300px 1fr;
+`;
+
+const Sidebar = styled.div`
+  height: 100vh;
+  overflow-y: auto;
+  padding: 20px;
+`;
+
+const Body = styled.div`
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+`;
+
 const PreviewGridView = styled.div`
   display: grid;
   grid-template-columns: 50% 50%;
@@ -61,7 +109,9 @@ const PreviewGridView = styled.div`
   max-width: 300px;
 `;
 
-const PreviewThumbView = styled.div`
+const PreviewThumbView = styled.button`
+  border: 2px solid transparent;
+  display: block;
   width: 100%;
   height: 80px;
   position: relative;
@@ -69,10 +119,14 @@ const PreviewThumbView = styled.div`
   opacity: 1;
   transition: all 300ms ease;
   cursor: pointer;
+  outline: none;
 
-  &:hover {
+  &:hover,
+  &:focus {
     opacity: 0.5;
   }
+
+  ${({ isActive }) => isActive && css({ border: "2px solid blue" })}
 `;
 
 const PreviewContentView = styled.div`
@@ -86,22 +140,22 @@ const PreviewContentView = styled.div`
   user-select: none;
 `;
 
-const CoverView = styled.div`
+const BaseCoverView = styled.div`
   background: yellow;
   color: green;
   padding: 30vh 20px;
   max-height: 960px;
+  width: 100%;
+`;
+
+const CoverView = styled(BaseCoverView)`
   text-align: center;
 `;
 
-const SplitCoverBlockView = styled.div`
+const SplitCoverBlockView = styled(BaseCoverView)`
   display: grid;
   grid-template-columns: 50% 50%;
   grid-gap: 20px;
-  background: yellow;
-  color: green;
-  padding: 30vh 20px;
-  max-height: 960px;
 `;
 
 const InnerGridCenterView = styled.div`
